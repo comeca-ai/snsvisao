@@ -141,15 +141,15 @@ export default function Page() {
       </section>
 
       <aside className="crm">
-        <h2>CRM ao vivo</h2>
-        <p className="sub">preenchido automaticamente pela conversa</p>
+        <h2>Caderninho do negócio</h2>
+        <p className="sub">anotado sozinho pela conversa</p>
         <span className={`consent ${consent ? 'ok' : ''}`}>
           {consent ? '✓ Consentimento LGPD registrado' : 'Aguardando consentimento LGPD'}
         </span>
         {facts.length === 0 ? (
           <p className="empty">
-            Nada extraído ainda. Converse com o agente — cada fato, objetivo,
-            oferta ou compromisso aparece aqui sozinho (após o consentimento).
+            Nada anotado ainda. Converse com o agente — cada coisa importante
+            que você contar aparece aqui sozinha (depois que você autorizar).
           </p>
         ) : (
           Object.entries(grouped).map(([kind, list]) => (
