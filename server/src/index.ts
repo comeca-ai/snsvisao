@@ -2,6 +2,7 @@ import express from 'express';
 import { getConfig } from './config.js';
 import { EvolutionProvider } from './providers/evolution.js';
 import { handleInbound } from './agent/orchestrator.js';
+import { devChatHandler } from './dev.js';
 
 const config = getConfig();
 const provider = new EvolutionProvider(config.evolution);
@@ -23,6 +24,14 @@ app.post('/webhook/evolution', (req, res) => {
   handleInbound(provider, req.body).catch((err) => {
     console.error('handleInbound falhou:', err);
   });
+});
+
+app.post('/dev/chat', (req, res) => {
+  if (req.get('x-webhook-token') !== config.webhookToken) {
+    res.status(401).json({ error: 'unauthorized' });
+    return;
+  }
+  void devChatHandler(req, res);
 });
 
 app.listen(config.port, () => {
