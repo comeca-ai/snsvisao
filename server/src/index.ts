@@ -3,6 +3,7 @@ import { getConfig } from './config.js';
 import { EvolutionProvider } from './providers/evolution.js';
 import { handleInbound } from './agent/orchestrator.js';
 import { devChatHandler } from './dev.js';
+import { evolutionSetupHandler } from './evolutionSetup.js';
 
 const config = getConfig();
 const provider = new EvolutionProvider(config.evolution);
@@ -32,6 +33,10 @@ app.post('/dev/chat', (req, res) => {
     return;
   }
   void devChatHandler(req, res);
+});
+
+app.get('/dev/evolution/setup', (req, res) => {
+  void evolutionSetupHandler(req, res);
 });
 
 app.listen(config.port, () => {
