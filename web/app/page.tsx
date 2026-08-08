@@ -99,17 +99,17 @@ export default function Page() {
     <main className="shell">
       <section className="chat">
         <header className="chat-header">
-          <div className="avatar">🤝</div>
+          <div className="avatar">🧵</div>
           <div>
-            <h1>Agente snsvisao — laboratório</h1>
+            <h1>Fio — laboratório</h1>
             <p>mesmo cérebro que atenderá no WhatsApp</p>
           </div>
         </header>
         <div className="messages">
           {messages.length === 0 && (
             <div className="bubble in">
-              Oi! Eu sou o agente em teste. Me conta: o que você vende, e o que
-              te traria mais resultado agora?
+              Oi! Eu sou o Fio 🧵 — não perco o fio de nenhuma conversa. Me
+              conta: o que você vende, e o que te traria mais resultado agora?
             </div>
           )}
           {messages.map((m, i) => (

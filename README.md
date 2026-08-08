@@ -1,6 +1,9 @@
-# snsvisao — agente comercial conversacional no WhatsApp
+# Fio — agente comercial conversacional no WhatsApp
 
-> Codinome do projeto. Nome de produto ainda não definido.
+> Nome do produto: **Fio** ("não perde o fio da conversa"; a memória chama
+> **Caderninho**). Pendente: INPI classes 35/42 + domínio (candidatos:
+> fio.chat, ofio.com.br, meufio.com.br, puxaofio.com.br). O repo mantém o
+> codinome `snsvisao`.
 
 Agente de IA que conversa com pequenos empresários pelo WhatsApp, entende o
 negócio deles a partir da própria conversa e os ajuda a **vender mais** —
