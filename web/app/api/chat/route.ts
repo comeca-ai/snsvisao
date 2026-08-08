@@ -1,11 +1,12 @@
 export const runtime = 'nodejs';
 
 export async function POST(req: Request): Promise<Response> {
-  const baseUrl = process.env.AGENT_API_URL;
+  const baseUrl =
+    process.env.AGENT_API_URL ?? 'https://server-production-d1a1.up.railway.app';
   const token = process.env.AGENT_API_TOKEN;
-  if (!baseUrl || !token) {
+  if (!token) {
     return Response.json(
-      { error: 'AGENT_API_URL / AGENT_API_TOKEN não configurados no Vercel' },
+      { error: 'AGENT_API_TOKEN não configurado no Vercel (copie o WEBHOOK_TOKEN do Railway)' },
       { status: 500 },
     );
   }
