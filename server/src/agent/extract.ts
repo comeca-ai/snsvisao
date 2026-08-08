@@ -2,12 +2,23 @@ import { z } from 'zod';
 
 export const FactKind = z.enum(['fact', 'goal', 'ask', 'offer', 'next_step']);
 
+/** Taxonomia do "quero vender mais": qual gargalo comercial o goal ataca. */
+export const Bottleneck = z.enum([
+  'aquisicao',
+  'conversao',
+  'ticket',
+  'retencao',
+  'posicionamento',
+]);
+
 export const ExtractionSchema = z.object({
   facts: z.array(
     z.object({
       kind: FactKind,
       content: z.string(),
       confidence: z.number(),
+      /** Apenas para kind=goal, quando identificável; senão null. */
+      bottleneck: Bottleneck.nullable(),
     }),
   ),
   followup: z
@@ -34,7 +45,9 @@ export function validateExtraction(raw: Extraction): Extraction {
   const facts = raw.facts
     .filter((f) => f.content.trim().length > 0)
     .filter((f) => f.confidence >= MIN_CONFIDENCE && f.confidence <= 1)
-    .slice(0, MAX_FACTS_PER_TURN);
+    .slice(0, MAX_FACTS_PER_TURN)
+    // bottleneck só faz sentido em goals — regra validada em código.
+    .map((f) => (f.kind === 'goal' ? f : { ...f, bottleneck: null }));
 
   const followup =
     raw.followup &&
@@ -57,6 +70,11 @@ Analise APENAS as mensagens mais recentes da pessoa (não do agente) e extraia:
   - "offer": algo que a pessoa oferece e pode servir a outros
   - "next_step": compromisso combinado na conversa
   confidence entre 0 e 1. Não repita fatos já listados no contexto.
+  Para kind="goal", classifique bottleneck quando identificável — um de:
+  "aquisicao" (falta gente chegando), "conversao" (chega mas não fecha),
+  "ticket" (fecha barato), "retencao" (compra e some), "posicionamento"
+  (mensagem/oferta não conecta). Se não der pra saber ainda, null.
+  Para os demais kinds, bottleneck é sempre null.
 - followup: se a conversa combinou (explícita ou implicitamente) retomar contato, informe due_in_hours (número de horas a partir de agora) e reason. Caso contrário, null.
 - consent_given: true SOMENTE se, nesta conversa, a pessoa aceitou explicitamente que o agente guarde/lembre os dados dela (ex.: respondeu "pode sim", "claro" a uma pergunta de consentimento). Na dúvida, false.
 

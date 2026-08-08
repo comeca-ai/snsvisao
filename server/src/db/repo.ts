@@ -122,6 +122,7 @@ export async function saveExtraction(
       kind: f.kind,
       content: f.content,
       confidence: f.confidence,
+      bottleneck: f.bottleneck,
     }));
     const { error } = await db.from('facts').insert(rows);
     if (error) throw new Error(`saveExtraction(facts): ${error.message}`);

@@ -10,10 +10,10 @@ describe('validateExtraction (limites validados em código, não no schema)', ()
     const result = validateExtraction(
       base({
         facts: [
-          { kind: 'fact', content: 'Vende semijoias no atacado', confidence: 0.9 },
-          { kind: 'goal', content: 'Quer vender mais', confidence: 0.4 },
-          { kind: 'fact', content: '   ', confidence: 0.9 },
-          { kind: 'fact', content: 'Confiança impossível', confidence: 1.5 },
+          { kind: 'fact', content: 'Vende semijoias no atacado', confidence: 0.9, bottleneck: null },
+          { kind: 'goal', content: 'Quer vender mais', confidence: 0.4, bottleneck: null },
+          { kind: 'fact', content: '   ', confidence: 0.9, bottleneck: null },
+          { kind: 'fact', content: 'Confiança impossível', confidence: 1.5, bottleneck: null },
         ],
       }),
     );
@@ -26,8 +26,22 @@ describe('validateExtraction (limites validados em código, não no schema)', ()
       kind: 'fact' as const,
       content: `Fato ${i}`,
       confidence: 0.9,
+      bottleneck: null,
     }));
     expect(validateExtraction(base({ facts })).facts).toHaveLength(10);
+  });
+
+  it('mantém bottleneck em goals e zera nos demais kinds', () => {
+    const result = validateExtraction(
+      base({
+        facts: [
+          { kind: 'goal', content: 'Vender mais no varejo', confidence: 0.9, bottleneck: 'conversao' },
+          { kind: 'fact', content: 'Tem loja física', confidence: 0.9, bottleneck: 'ticket' },
+        ],
+      }),
+    );
+    expect(result.facts[0]!.bottleneck).toBe('conversao');
+    expect(result.facts[1]!.bottleneck).toBeNull();
   });
 
   it('descarta followup com prazo inválido', () => {
