@@ -85,6 +85,21 @@ npm run dev
 Aplicar migrations em `db/migrations/`, em ordem (ou `docker compose up db`
 + `npm run migrate`).
 
+## Features fundidas (merge da linha remota)
+
+- **Setup da Evolution via navegador** — `GET /dev/evolution/setup?token=<ADMIN_TOKEN>`
+  serve uma página com o QR atual, estado da conexão e auto-refresh a cada
+  10s (instruções PT-BR: WhatsApp → Aparelhos conectados → escanear).
+- **Provider CloudAPI (stub p/ homologação)** — `server/src/messaging/cloudapi.ts`
+  já implementa `parseInbound`/`sendText` no formato oficial da Meta. Ative
+  com `MESSAGING_PROVIDER=cloudapi` + `CLOUDAPI_TOKEN`/`CLOUDAPI_PHONE_ID`
+  (sem essas vars, o factory lança "não configurado").
+- **`deploy/evolution/`** — stack standalone da Evolution API (compose +
+  passo a passo) para rodar o canal WhatsApp numa máquina separada
+  (alternativa ao serviço `evolution` do docker-compose all-in-one da raiz
+  e ao Supabase). Mantida da linha remota, junto com `supabase/migrations/`
+  (legado/referência — o schema canônico é `db/migrations/`).
+
 ## Canal web
 
 O Fio também conversa pelo navegador: `web/` é uma interface de chat

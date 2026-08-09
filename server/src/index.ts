@@ -4,6 +4,7 @@ import { pool } from './db/pool.js';
 import { createLLMClient } from './llm/index.js';
 import { createMessagingProvider } from './messaging/index.js';
 import { createAdminRouter } from './routes/admin.js';
+import { createDevEvolutionRouter } from './routes/devEvolution.js';
 import { createHealthRouter } from './routes/health.js';
 import { createWebchatRouter } from './routes/webchat.js';
 import { createWebhookRouter } from './routes/webhook.js';
@@ -19,6 +20,7 @@ async function bootstrap(): Promise<void> {
   app.use(createWebhookRouter(deps));
   app.use(createWebchatRouter(deps));
   app.use(createAdminRouter(config));
+  app.use(createDevEvolutionRouter(config));
 
   app.listen(config.PORT, () => {
     console.log(`Fio server ouvindo na porta ${config.PORT}`);

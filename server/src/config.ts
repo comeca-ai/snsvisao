@@ -12,9 +12,17 @@ const envSchema = z.object({
   LLM_API_KEY: z.string().min(1, 'LLM_API_KEY é obrigatória'),
   LLM_BASE_URL: z.string().min(1).optional(),
 
+  MESSAGING_PROVIDER: z.enum(['evolution', 'cloudapi']).default('evolution'),
+
   EVOLUTION_API_URL: z.string().min(1, 'EVOLUTION_API_URL é obrigatória'),
   EVOLUTION_API_KEY: z.string().min(1, 'EVOLUTION_API_KEY é obrigatória'),
   EVOLUTION_INSTANCE: z.string().min(1).default('fio'),
+
+  // WhatsApp Cloud API oficial (Meta) — opcionais; só exigidas quando
+  // MESSAGING_PROVIDER=cloudapi (stub em homologação).
+  CLOUDAPI_TOKEN: z.string().min(1).optional(),
+  CLOUDAPI_PHONE_ID: z.string().min(1).optional(),
+  CLOUDAPI_VERIFY_TOKEN: z.string().min(1).optional(),
 
   SEND_MIN_INTERVAL_MS: z.coerce.number().int().nonnegative().default(1200)
 });
