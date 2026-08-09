@@ -7,9 +7,11 @@
 #
 # Comportamento:
 #   - Se o numero JA estiver conectado: avisa e sai.
-#   - Se houver QR pendente: salva o PNG em /tmp/fio-qrcode.png e
-#     tenta exibir no terminal (qrencode, se instalado). Caso
-#     contrario, instrui como abrir o PNG ou usar /admin/qrcode.
+#   - Se houver QR (base64) pendente: salva o PNG em /tmp/fio-qrcode.png
+#     e instrui como abrir o PNG ou usar /admin/qrcode.
+#   - Se houver APENAS codigo de pareamento (8 digitos): exibe o codigo
+#     em texto e instrui o fluxo "Conectar com numero de telefone".
+#     (O codigo NAO e um QR escaneavel — nao adianta desenha-lo.)
 # =============================================================
 set -euo pipefail
 
@@ -52,30 +54,15 @@ if [ -n "$base64_data" ]; then
   printf '%s' "$base64_data" | sed 's/^data:image\/png;base64,//' | base64 -d > "$QR_PNG"
   echo ""
   echo "QR code salvo em: ${QR_PNG}"
-fi
 
-if [ -n "$pairing_code" ]; then
-  echo "Codigo de pareamento (8 digitos): ${pairing_code}"
-fi
-
-echo ""
-if command -v qrencode > /dev/null 2>&1 && [ -n "$pairing_code" ]; then
-  echo "QR no terminal (se nao renderizar bem, use o PNG):"
-  qrencode -t ANSIUTF8 "$pairing_code"
-elif command -v qrencode > /dev/null 2>&1 && [ -n "$base64_data" ]; then
-  # Sem pairing code: desenha um QR auxiliar com o caminho do PNG nao ajuda;
-  # neste caso instruimos a abrir o arquivo mesmo.
-  echo "Dica: instale/leia o PNG abaixo — o qrencode nao renderiza imagens prontas."
-fi
-
-cat <<EOF
+  cat <<EOF
 
 Como escanear:
   1. No celular do numero DEDICADO: WhatsApp > Aparelhos conectados >
      Conectar aparelho.
   2. Aponte a camera para o QR code.
 
-Se o QR nao apareceu no terminal, voce tem duas opcoes:
+Como o QR nao cabe no terminal, voce tem duas opcoes:
 
   a) Trazer o PNG para o seu computador e abrir:
        scp root@IP_DA_VPS:${QR_PNG} .
@@ -86,7 +73,20 @@ Se o QR nao apareceu no terminal, voce tem duas opcoes:
        curl -s -H "x-admin-token: \${ADMIN_TOKEN:-SEU_ADMIN_TOKEN}" \\
          http://localhost:3000/admin/qrcode
      (o ADMIN_TOKEN esta em ${SCRIPT_DIR}/.env)
-
-Dica: para desenhar o QR no terminal na proxima vez:
-       apt-get install -y qrencode
 EOF
+elif [ -n "$pairing_code" ]; then
+  # SEM base64: NAO desenhar QR ASCII do codigo — o pairing code nao e
+  # um QR escaneavel; ele se DIGITA no WhatsApp.
+  cat <<EOF
+
+=============================================================
+  Codigo de pareamento:  ${pairing_code}
+=============================================================
+
+Como conectar usando o codigo (sem QR code):
+  1. No celular do numero DEDICADO: WhatsApp > Aparelhos conectados >
+     Conectar aparelho.
+  2. Toque em "Conectar com numero de telefone" (abaixo do QR code).
+  3. Digite o codigo de 8 digitos acima.
+EOF
+fi

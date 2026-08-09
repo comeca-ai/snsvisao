@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -6,8 +7,16 @@ import pg from 'pg';
 const { Pool } = pg;
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-// src/db (ou dist/db) -> server -> raiz do repo -> db/migrations
-const MIGRATIONS_DIR = path.resolve(here, '..', '..', '..', 'db', 'migrations');
+// Resolucao que funciona nos dois cenarios:
+//  - producao (Docker): /app/dist/db/migrate.js -> /app/db/migrations (2 niveis)
+//  - dev (repo): server/src/db/migrate.ts -> <raiz do repo>/db/migrations (3 niveis)
+const MIGRATIONS_DIR_CANDIDATES = [
+  path.resolve(here, '..', '..', 'db', 'migrations'),
+  path.resolve(here, '..', '..', '..', 'db', 'migrations')
+];
+const MIGRATIONS_DIR =
+  MIGRATIONS_DIR_CANDIDATES.find((dir) => existsSync(dir)) ??
+  MIGRATIONS_DIR_CANDIDATES[0];
 
 /**
  * Runner idempotente de migrations: aplica arquivos .sql de db/migrations
