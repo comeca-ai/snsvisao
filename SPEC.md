@@ -297,6 +297,47 @@ Healthcheck do server: wget /health.
 - Runner de migrations: idempotente (teste com pg-mem OU documentar skip
   sem DATABASE_URL de teste — escolher o mais simples que passe).
 
+## 9. Canal Web (vercel/ai-chatbot adaptado) — contratos server × web
+
+### 9.1 Endpoint no server (Estágio 6A)
+`server/src/routes/webchat.ts`:
+- `POST /webchat/message` — auth: header `x-webhook-token === WEBHOOK_TOKEN` (mesmo do webhook Evolution).
+- Body JSON: `{ "sessionId": string (min 8, max 128), "text": string (min 1, max 4000) }`.
+- Resposta `200`: `{ "replies": string[], "contactId": string }` — `replies` são os balões que o agente enviaria (mesma persona, mesma memória, mesmo LGPD gate).
+- Implementação: `WebChatProvider implements MessagingProvider` (`messaging/webchat.ts`) cujo `sendText` empilha os textos num buffer em vez de chamar a Evolution. A rota instancia o provider, chama `handleInbound` com `phone = "web_" + sessionId`, `pushName = null`, `providerMsgId = "web_" + crypto.randomUUID()`, e devolve o buffer.
+- `parseInbound` do WebChatProvider não é usado (pode lançar ou retornar null — documentar).
+- Testes vitest: rota responde replies com LLM mockado; auth 401 sem token; body inválido 400; LGPD gate funciona também no canal web.
+
+### 9.2 Adaptação do template (Estágio 6B) — diretório `web/`
+Base: vercel/ai-chatbot (Next 16, AI SDK 7, next-auth v5 beta, drizzle, Tailwind, shadcn).
+- **Backend de IA**: reescrever `app/(chat)/api/chat/route.ts` para chamar
+  `POST {FIO_SERVER_URL}/webchat/message` (header `x-webhook-token: FIO_WEBHOOK_TOKEN`,
+  body `{sessionId, text}` com sessionId = id do chat) e devolver as replies
+  como stream compatível com AI SDK (`createUIMessageStream` ou texto simples —
+  o que integrar mais limpo com `useChat` do template). O cérebro é o Fio;
+  o template NÃO chama Anthropic/OpenAI/Gateway diretamente.
+- **Persistência de chat**: manter drizzle do template apontando para o mesmo
+  Postgres do compose, database separado `fio_web` (POSTGRES_URL).
+- **Auth**: manter somente guest auth do template (sem providers OAuth) — o
+  dono do negócio conversa sem criar conta nesta fase.
+- **Remover/simplificar**: upload de arquivos (BLOB), Redis/streams resumáveis,
+  AI Gateway, qualquer dependência de serviço Vercel. Deve rodar `next build`
+  sem BLOB_READ_WRITE_TOKEN, sem REDIS_URL, sem AI_GATEWAY_API_KEY.
+- **Branding/idioma**: nome "Fio", PT-BR em toda UI, tom positivo comercial.
+  Proibido "CRM", "automação", "disparo" em qualquer texto visível.
+  Sugestão de identidade: fundo claro quente (off-white), acento terracota/
+  laranja queimado, tipografia limpa — o designer interno do agente decide,
+  mas SEM gradiente azul-roxo e SEM visual "Google".
+- **Env novas** (`.env.example` da raiz + `web/.env.example`):
+  `FIO_SERVER_URL=http://server:3000`, `FIO_WEBHOOK_TOKEN=<mesmo WEBHOOK_TOKEN>`,
+  `AUTH_SECRET=<openssl rand -base64 32>`,
+  `POSTGRES_URL=postgres://fio:${POSTGRES_PASSWORD}@db:5432/fio_web`.
+- **Compose**: serviço `web` (build ./web, porta 3001:3000, depends_on db+server
+  healthy, env_file .env, healthcheck). Banco `fio_web` criado em
+  `db/init/00-create-dbs.sh` junto com `fio_evolution`.
+- Migrações drizzle: rodar no boot do container web (drizzle-kit push ou
+  migrate no start — documentar a escolha).
+
 ## 8. Critérios de aceite
 
 1. `cd server && npm ci && npm run typecheck && npm test` → verde.
