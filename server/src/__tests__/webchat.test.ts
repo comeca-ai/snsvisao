@@ -241,4 +241,62 @@ describe('POST /webchat/message (SPEC 9.1)', () => {
     const replies = res.json['replies'] as string[];
     expect(replies.some((t) => t.includes('Parei por aqui'))).toBe(true);
   });
+
+  it('(f) contrato v1.1: replies vazio com reason consent_pending (já pedimos permissão antes)', async () => {
+    repoMocks.upsertContact.mockResolvedValue(
+      makeContact({ consent: false, consentAt: null })
+    );
+    currentLlm = makeLlm({ classifyConsent: 'não' });
+    // Já existe mensagem nossa anterior: o LGPD gate não repete o pedido,
+    // então o buffer volta vazio e a rota precisa explicar o motivo.
+    repoMocks.getLastOutboundAt.mockResolvedValue(
+      new Date(Date.now() - 60_000)
+    );
+
+    const res = await postMessage({
+      sessionId: 'sessao-de-teste-01',
+      text: 'e aí, me conta mais'
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.json).toEqual({
+      replies: [],
+      contactId: 'contact-1',
+      reason: 'consent_pending'
+    });
+  });
+
+  it('(g) contrato v1.1: replies vazio com reason throttled (anti-spam)', async () => {
+    currentLlm = makeLlm({
+      replyText: 'Boa, bolo de pote vende demais!\n\nQual sabor sai mais?'
+    });
+    // Último envio há menos de SEND_MIN_INTERVAL_MS (1200ms na cfg de teste):
+    // a persona gerou resposta, mas o throttle segurou os balões.
+    repoMocks.getLastOutboundAt.mockResolvedValue(new Date());
+
+    const res = await postMessage({
+      sessionId: 'sessao-de-teste-01',
+      text: 'vendo bolo de pote'
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.json).toEqual({
+      replies: [],
+      contactId: 'contact-1',
+      reason: 'throttled'
+    });
+  });
+
+  it('(h) contrato v1.1: replies não-vazio omite o campo reason', async () => {
+    currentLlm = makeLlm({ replyText: 'Bora! Me conta o que você vende hoje.' });
+
+    const res = await postMessage({
+      sessionId: 'sessao-de-teste-01',
+      text: 'oi'
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.json['replies']).toEqual(['Bora! Me conta o que você vende hoje.']);
+    expect(res.json).not.toHaveProperty('reason');
+  });
 });

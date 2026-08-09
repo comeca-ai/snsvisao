@@ -85,6 +85,15 @@ npm run dev
 Aplicar migrations em `db/migrations/`, em ordem (ou `docker compose up db`
 + `npm run migrate`).
 
+## Canal web
+
+O Fio também conversa pelo navegador: `web/` é uma interface de chat
+(template Vercel ai-chatbot adaptado, PT-BR) que sobe em `:3001` e fala com
+o mesmo cérebro do WhatsApp via `POST /webchat/message` (server-to-server) —
+mesma persona, mesma memória (Caderninho), mesmo gate LGPD e throttle. O
+browser nunca chama o server direto: a rota de API do Next.js repassa a
+mensagem com o `WEBHOOK_TOKEN`. Deploy e operação em `docs/OPERACAO.md`.
+
 ### Evolution API
 
 Aponte o webhook da instância para `POST {BASE_URL}/webhook/evolution` com o

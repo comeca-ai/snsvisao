@@ -27,9 +27,17 @@ const BRAIN_TIMEOUT_MS = 30_000;
 const FIO_FALLBACK_MESSAGE =
   "Opa, o Fio deu uma escorregada por aqui. Tenta de novo?";
 
+// Contrato v1.1 (SPEC §9.1): replies vazio NAO e falha — o server informa o
+// motivo em `reason` e a gente traduz para um balao amigavel da persona.
+const FIO_CONSENT_PENDING_MESSAGE =
+  "O Fio só guarda o que você deixar, combinado? Responde *pode* que a gente continua 😊";
+const FIO_THROTTLED_MESSAGE =
+  "Só um instante — o Fio está organizando as ideias. Manda de novo em alguns segundos?";
+
 type WebchatBrainResponse = {
   replies?: unknown;
   contactId?: string;
+  reason?: unknown;
 };
 
 async function askFioBrain({
@@ -67,6 +75,14 @@ async function askFioBrain({
       : [];
 
     if (replies.length === 0) {
+      // replies vazio com `reason` e situacao normal (LGPD gate ou throttle);
+      // sem `reason`, cai no fallback de falha real (contrato antigo/quebrado).
+      if (data.reason === "consent_pending") {
+        return [FIO_CONSENT_PENDING_MESSAGE];
+      }
+      if (data.reason === "throttled") {
+        return [FIO_THROTTLED_MESSAGE];
+      }
       throw new Error("Fio brain respondeu sem replies");
     }
 

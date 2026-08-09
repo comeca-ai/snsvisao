@@ -7,7 +7,7 @@ import {
   useArtifact,
   useArtifactSelector,
 } from "@/hooks/use-artifact";
-import type { Attachment, ChatMessage } from "@/lib/types";
+import type { ChatMessage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Artifact } from "./artifact";
 import { ChatHeader } from "./chat-header";
@@ -38,7 +38,6 @@ export function ChatShell() {
   const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(
     null
   );
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const isArtifactVisible = useArtifactSelector((state) => state.isVisible);
   const { setArtifact } = useArtifact();
 
@@ -52,7 +51,6 @@ export function ChatShell() {
       stopRef.current();
       setArtifact(initialArtifactData);
       setEditingMessage(null);
-      setAttachments([]);
     }
   }, [chatId, setArtifact]);
 
@@ -145,7 +143,6 @@ export function ChatShell() {
 
         <Artifact
           addToolApprovalResponse={addToolApprovalResponse}
-          attachments={attachments}
           chatId={chatId}
           input={input}
           isReadonly={isReadonly}
@@ -154,7 +151,6 @@ export function ChatShell() {
           selectedModelId={currentModelId}
           selectedVisibilityType={visibilityType}
           sendMessage={sendMessage}
-          setAttachments={setAttachments}
           setInput={setInput}
           setMessages={setMessages}
           status={status}

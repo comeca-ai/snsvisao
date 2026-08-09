@@ -54,6 +54,17 @@ export function createWebchatRouter(deps: OrchestratorDeps): Router {
         { ...deps, provider: webchat }
       );
 
+      // Contrato v1.1: replies vazio NÃO é erro. Informamos o motivo para o
+      // front exibir balão amigável em vez da mensagem genérica de falha:
+      // - 'consent_pending': contato ainda não consentiu (LGPD gate já pediu
+      //   permissão uma vez; não insistimos — ver orchestrator passo 2);
+      // - 'throttled': resposta gerada, mas segurada pelo anti-spam.
+      if (webchat.replies.length === 0) {
+        const reason = contact.consent ? 'throttled' : 'consent_pending';
+        res.status(200).json({ replies: [], contactId: contact.id, reason });
+        return;
+      }
+
       res.status(200).json({ replies: webchat.replies, contactId: contact.id });
     } catch (err) {
       console.error('[webchat] erro no handleInbound:', err);
