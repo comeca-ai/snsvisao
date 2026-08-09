@@ -7,7 +7,6 @@ export const authConfig = {
   callbacks: {},
   pages: {
     newUser: `${base}/`,
-    signIn: `${base}/login`,
   },
   providers: [],
   trustHost: true,

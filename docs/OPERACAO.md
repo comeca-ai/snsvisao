@@ -167,3 +167,27 @@ bom senso, funciona bem — mas siga estas regras para não perder o número:
 | Dados do Postgres (conversas, contatos) | volume Docker `pgdata` |
 | Logs | `docker compose logs` (rodando de `/opt/fio`) |
 | QR code temporário | `/tmp/fio-qrcode.png` |
+
+## 9. Canal web (chat do Fio no navegador)
+
+Além do WhatsApp, o Fio atende o visitante direto no navegador: é o serviço
+`web` do compose (interface em português, sem precisar criar conta).
+
+- **Como acessar**: `http://IP_DA_SUA_VPS:3001` (o compose publica
+  `3001:3000`). Se tiver domínio próprio, aponte para essa porta.
+- **Como funciona**: a interface web não fala com nenhum provedor de IA. Ela
+  repassa cada mensagem para o cérebro do Fio (`server` Express) no endpoint
+  `POST /webchat/message` — mesma persona, mesma memória, mesmas regras de
+  consentimento (LGPD) do WhatsApp.
+- **Variáveis novas** (ficam no `/opt/fio/.env`):
+  - `AUTH_SECRET` — segredo das sessões do visitante. Gere uma vez com
+    `openssl rand -base64 32` e cole no `.env`.
+  - `FIO_WEBHOOK_TOKEN` — copie o mesmo valor de `WEBHOOK_TOKEN`.
+  - `FIO_SERVER_URL` — já vem certo no compose (`http://server:3000`).
+  - `POSTGRES_URL` do web — o compose monta sozinho a partir de
+    `POSTGRES_PASSWORD`; não precisa preencher.
+- **Onde ficam as conversas do site**: no database `fio_web` do mesmo
+  Postgres (criado automaticamente no primeiro boot pelo script
+  `db/init/00-create-dbs.sh`). As tabelas são aplicadas no boot do
+  container web (migrations do drizzle, idempotentes).
+- **Logs**: `docker compose logs web` (rodando de `/opt/fio`).

@@ -78,7 +78,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       method: "DELETE",
     });
 
-    toast.success("All chats deleted");
+    toast.success("Todas as conversas foram apagadas");
   }, [mutate, router]);
 
   return (
@@ -91,7 +91,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 <SidebarMenuButton
                   asChild
                   className="size-8 !px-0 items-center justify-center group-data-[collapsible=icon]:group-hover/logo:opacity-0"
-                  tooltip="Chatbot"
+                  tooltip="Fio"
                 >
                   <Link href="/" onClick={closeMobile}>
                     <MessageSquareIcon className="size-4 text-sidebar-foreground/50" />
@@ -107,12 +107,15 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                     </SidebarMenuButton>
                   </TooltipTrigger>
                   <TooltipContent className="hidden md:block" side="right">
-                    Open sidebar
+                    Abrir barra lateral
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <div className="group-data-[collapsible=icon]:hidden">
-                <SidebarTrigger className="text-sidebar-foreground/60 transition-colors duration-150 hover:text-sidebar-foreground" />
+              <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
+                <span className="font-semibold text-[15px] text-sidebar-foreground tracking-tight">
+                  Fio
+                </span>
+                <SidebarTrigger className="ml-auto text-sidebar-foreground/60 transition-colors duration-150 hover:text-sidebar-foreground" />
               </div>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -125,10 +128,10 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                   <SidebarMenuButton
                     className="h-8 rounded-lg border border-sidebar-border text-[13px] text-sidebar-foreground/70 transition-colors duration-150 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                     onClick={handleNewChat}
-                    tooltip="New Chat"
+                    tooltip="Nova conversa"
                   >
                     <PenSquareIcon className="size-4" />
-                    <span className="font-medium">New chat</span>
+                    <span className="font-medium">Nova conversa</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 {user ? (
@@ -136,10 +139,10 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                     <SidebarMenuButton
                       className="rounded-lg text-sidebar-foreground/40 transition-colors duration-150 hover:bg-destructive/10 hover:text-destructive"
                       onClick={handleShowDeleteAllDialog}
-                      tooltip="Delete All Chats"
+                      tooltip="Apagar todas as conversas"
                     >
                       <TrashIcon className="size-4" />
-                      <span className="text-[13px]">Delete all</span>
+                      <span className="text-[13px]">Apagar tudo</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ) : null}
@@ -160,16 +163,16 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete all chats?</AlertDialogTitle>
+            <AlertDialogTitle>Apagar todas as conversas?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete all
-              your chats and remove them from our servers.
+              Essa ação não tem volta. Todas as suas conversas serão apagadas
+              para sempre.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteAll}>
-              Delete All
+              Apagar tudo
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

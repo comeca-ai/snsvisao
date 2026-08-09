@@ -2,7 +2,6 @@
 
 import {
   BombIcon,
-  ListIcon,
   PaletteIcon,
   PenLineIcon,
   PenSquareIcon,
@@ -23,45 +22,39 @@ export type SlashCommand = {
 export const slashCommands: SlashCommand[] = [
   {
     action: "new",
-    description: "Start a new chat",
+    description: "Começar uma nova conversa",
     icon: <PenSquareIcon className="size-3.5" />,
-    name: "new",
+    name: "nova",
   },
   {
     action: "clear",
-    description: "Clear current chat",
+    description: "Limpar a conversa atual",
     icon: <Trash2Icon className="size-3.5" />,
-    name: "clear",
+    name: "limpar",
   },
   {
     action: "rename",
-    description: "Rename current chat",
+    description: "Renomear a conversa atual",
     icon: <PenLineIcon className="size-3.5" />,
-    name: "rename",
-  },
-  {
-    action: "model",
-    description: "Change the AI model",
-    icon: <ListIcon className="size-3.5" />,
-    name: "model",
+    name: "renomear",
   },
   {
     action: "theme",
-    description: "Toggle dark/light mode",
+    description: "Alternar modo claro/escuro",
     icon: <PaletteIcon className="size-3.5" />,
-    name: "theme",
+    name: "tema",
   },
   {
     action: "delete",
-    description: "Delete current chat",
+    description: "Apagar a conversa atual",
     icon: <XIcon className="size-3.5" />,
-    name: "delete",
+    name: "apagar",
   },
   {
     action: "purge",
-    description: "Delete all chats",
+    description: "Apagar todas as conversas",
     icon: <BombIcon className="size-3.5" />,
-    name: "purge",
+    name: "limpar-tudo",
   },
 ];
 
@@ -149,7 +142,7 @@ export function SlashCommandMenu({
       ref={menuRef}
     >
       <div className="px-4 py-2.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/40">
-        Commands
+        Comandos
       </div>
       <div className="max-h-64 overflow-y-auto pb-1 no-scrollbar">
         {filtered.map((cmd, index) => (

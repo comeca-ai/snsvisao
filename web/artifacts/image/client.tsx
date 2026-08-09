@@ -55,7 +55,7 @@ export const imageArtifact = new Artifact({
           }, "image/png");
         };
 
-        toast.success("Copied image to clipboard!");
+        toast.success("Imagem copiada!");
       },
     },
   ],

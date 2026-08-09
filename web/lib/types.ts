@@ -1,10 +1,6 @@
-import type { InferUITool, UIMessage } from "ai";
+import { type InferUITool, tool, type UIMessage } from "ai";
 import { z } from "zod";
 import type { ArtifactKind } from "@/components/chat/artifact";
-import type { createDocument } from "./ai/tools/create-document";
-import type { getWeather } from "./ai/tools/get-weather";
-import type { requestSuggestions } from "./ai/tools/request-suggestions";
-import type { updateDocument } from "./ai/tools/update-document";
 import type { Suggestion } from "./db/schema";
 
 export const messageMetadataSchema = z.object({
@@ -13,18 +9,34 @@ export const messageMetadataSchema = z.object({
 
 export type MessageMetadata = z.infer<typeof messageMetadataSchema>;
 
-type weatherTool = InferUITool<typeof getWeather>;
-type createDocumentTool = InferUITool<ReturnType<typeof createDocument>>;
-type updateDocumentTool = InferUITool<ReturnType<typeof updateDocument>>;
-type requestSuggestionsTool = InferUITool<
-  ReturnType<typeof requestSuggestions>
->;
+// O canal web do Fio nao executa tools (o cerebro e o server Express).
+// Os stubs abaixo existem SOMENTE para tipar partes de tool herdadas do
+// template que podem aparecer em conversas antigas — nunca sao executados.
+const getWeatherStub = tool({
+  inputSchema: z.object({ latitude: z.number(), longitude: z.number() }),
+  outputSchema: z.any(),
+});
+
+const createDocumentStub = tool({
+  inputSchema: z.object({ kind: z.string(), title: z.string() }),
+  outputSchema: z.any(),
+});
+
+const updateDocumentStub = tool({
+  inputSchema: z.object({ description: z.string(), id: z.string() }),
+  outputSchema: z.any(),
+});
+
+const requestSuggestionsStub = tool({
+  inputSchema: z.object({ documentId: z.string() }),
+  outputSchema: z.any(),
+});
 
 export type ChatTools = {
-  getWeather: weatherTool;
-  createDocument: createDocumentTool;
-  updateDocument: updateDocumentTool;
-  requestSuggestions: requestSuggestionsTool;
+  getWeather: InferUITool<typeof getWeatherStub>;
+  createDocument: InferUITool<typeof createDocumentStub>;
+  updateDocument: InferUITool<typeof updateDocumentStub>;
+  requestSuggestions: InferUITool<typeof requestSuggestionsStub>;
 };
 
 export type WaitingStatusData = {
