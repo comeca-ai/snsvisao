@@ -1,0 +1,80 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: fio-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fio
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: fio
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Cria o database fio_evolution (usado pela Evolution API) no 1o boot.
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fio -d fio"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Sem publicacao de porta: acesso somente pela rede interna do compose.
+
+  evolution:
+    image: atendai/evolution-api:v2.3.7
+    container_name: fio-evolution
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8080
+      LOG_LEVEL: ERROR
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY}
+      AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES: "true"
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgres://fio:${POSTGRES_PASSWORD}@db:5432/fio_evolution
+      DATABASE_CONNECTION_CLIENT_NAME: evolution
+      DATABASE_SAVE_DATA_INSTANCE: "true"
+      DATABASE_SAVE_DATA_NEW_MESSAGE: "true"
+      DATABASE_SAVE_MESSAGE_UPDATE: "true"
+      DATABASE_SAVE_DATA_CONTACTS: "true"
+      DATABASE_SAVE_DATA_CHATS: "true"
+      DATABASE_SAVE_DATA_LABELS: "true"
+      DATABASE_SAVE_DATA_HISTORIC: "true"
+      # Webhook configurado por instancia (scripts/lib-evolution.sh), nao global.
+      WEBHOOK_GLOBAL_ENABLED: "false"
+      CACHE_REDIS_ENABLED: "false"
+      CACHE_LOCAL_ENABLED: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/ > /dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    # Sem publicacao de porta: acesso somente pela rede interna do compose.
+
+  server:
+    build:
+      # Contexto na raiz: o Dockerfile precisa copiar db/migrations
+      # (fora de server/) para dentro da imagem. Ver server/Dockerfile.
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: fio-server
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      evolution:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health > /dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+
+volumes:
+  pgdata:
