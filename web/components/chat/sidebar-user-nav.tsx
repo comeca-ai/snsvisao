@@ -1,7 +1,6 @@
 "use client";
 
 import { ChevronUp } from "lucide-react";
-import { useRouter } from "next/navigation";
 import type { User } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
@@ -18,46 +17,21 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { guestRegex } from "@/lib/constants";
 import { LoaderIcon } from "./icons";
-import { toast } from "./toast";
-
-function emailToHue(email: string): number {
-  let hash = 0;
-  for (const char of email) {
-    hash = char.charCodeAt(0) + ((hash << 5) - hash);
-  }
-  return Math.abs(hash) % 360;
-}
 
 export function SidebarUserNav({ user }: { user: User }) {
-  const router = useRouter();
-  const { data, status } = useSession();
+  const { status } = useSession();
   const { setTheme, resolvedTheme } = useTheme();
 
-  const isGuest = guestRegex.test(data?.user?.email ?? "");
   const handleThemeSelect = useCallback(() => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
   }, [resolvedTheme, setTheme]);
 
-  const handleAuthClick = useCallback(() => {
-    if (status === "loading") {
-      toast({
-        description: "Checking authentication status, please try again!",
-        type: "error",
-      });
-
-      return;
-    }
-
-    if (isGuest) {
-      router.push("/login");
-    } else {
-      signOut({
-        redirectTo: "/",
-      });
-    }
-  }, [isGuest, router, status]);
+  const handleSignOut = useCallback(() => {
+    // Canal web e so de convidados: sair limpa a sessao e o visitante
+    // volta como um convidado novinho na proxima visita.
+    signOut({ redirectTo: "/" });
+  }, []);
 
   return (
     <SidebarMenu>
@@ -69,7 +43,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                 <div className="flex flex-row items-center gap-2">
                   <div className="size-6 animate-pulse rounded-full bg-sidebar-foreground/10" />
                   <span className="animate-pulse rounded-md bg-sidebar-foreground/10 text-transparent text-[13px]">
-                    Loading...
+                    Carregando...
                   </span>
                 </div>
                 <div className="animate-spin text-sidebar-foreground/50">
@@ -81,14 +55,9 @@ export function SidebarUserNav({ user }: { user: User }) {
                 className="h-8 px-2 rounded-lg bg-transparent text-sidebar-foreground/70 transition-colors duration-150 hover:text-sidebar-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 data-testid="user-nav-button"
               >
-                <div
-                  className="size-5 shrink-0 rounded-full ring-1 ring-sidebar-border/50"
-                  style={{
-                    background: `linear-gradient(135deg, oklch(0.35 0.08 ${emailToHue(user.email ?? "")}), oklch(0.25 0.05 ${emailToHue(user.email ?? "") + 40}))`,
-                  }}
-                />
+                <div className="size-5 shrink-0 rounded-full bg-primary/15 ring-1 ring-primary/25" />
                 <span className="truncate text-[13px]" data-testid="user-email">
-                  {isGuest ? "Guest" : user?.email}
+                  Visitante
                 </span>
                 <ChevronUp className="ml-auto size-3.5 text-sidebar-foreground/50" />
               </SidebarMenuButton>
@@ -104,16 +73,18 @@ export function SidebarUserNav({ user }: { user: User }) {
               data-testid="user-nav-item-theme"
               onSelect={handleThemeSelect}
             >
-              {`Toggle ${resolvedTheme === "light" ? "dark" : "light"} mode`}
+              {resolvedTheme === "light"
+                ? "Mudar para modo escuro"
+                : "Mudar para modo claro"}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild data-testid="user-nav-item-auth">
               <button
                 className="w-full cursor-pointer text-[13px]"
-                onClick={handleAuthClick}
+                onClick={handleSignOut}
                 type="button"
               >
-                {isGuest ? "Login to your account" : "Sign out"}
+                Recomeçar como visitante
               </button>
             </DropdownMenuItem>
           </DropdownMenuContent>

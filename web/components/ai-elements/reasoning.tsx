@@ -156,12 +156,12 @@ export type ReasoningTriggerProps = ComponentProps<
 
 const defaultGetThinkingMessage = (isStreaming: boolean, duration?: number) => {
   if (isStreaming || duration === 0) {
-    return <Shimmer className="font-medium" duration={1}>Thinking...</Shimmer>;
+    return <Shimmer className="font-medium" duration={1}>Pensando...</Shimmer>;
   }
   if (duration === undefined) {
-    return <p>Thought for a few seconds</p>;
+    return <p>Pensou por alguns segundos</p>;
   }
-  return <p>Thought for {duration} seconds</p>;
+  return <p>Pensou por {duration} segundos</p>;
 };
 
 export const ReasoningTrigger = memo(
@@ -221,13 +221,14 @@ export const ReasoningContent = memo(
           "mt-2 animate-in fade-in-0 duration-200 text-muted-foreground/60 [overflow-anchor:none]",
           className
         )}
+        {...props}
       >
         <div
           className="max-h-[200px] overflow-y-auto rounded-lg border border-border/20 bg-muted/30 px-3 py-2 text-[11px] leading-relaxed"
           ref={scrollRef}
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          <Streamdown plugins={streamdownPlugins} {...props}>
+          <Streamdown plugins={streamdownPlugins}>
             {children}
           </Streamdown>
         </div>

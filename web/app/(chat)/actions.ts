@@ -1,12 +1,8 @@
 "use server";
 
-import { generateText, type UIMessage } from "ai";
-import { cookies } from "next/headers";
+import type { UIMessage } from "ai";
 import { auth } from "@/app/(auth)/auth";
 import type { VisibilityType } from "@/components/chat/visibility-selector";
-import { titleModel } from "@/lib/ai/models";
-import { titlePrompt } from "@/lib/ai/prompts";
-import { getTitleModel } from "@/lib/ai/providers";
 import {
   deleteMessagesByChatIdAfterTimestamp,
   getChatById,
@@ -15,28 +11,24 @@ import {
 } from "@/lib/db/queries";
 import { getTextFromMessage } from "@/lib/utils";
 
-export async function saveChatModelAsCookie(model: string) {
-  const cookieStore = await cookies();
-  cookieStore.set("chat-model", model);
-}
+const MAX_TITLE_LENGTH = 48;
 
+// Titulo local (sem IA): o cérebro do Fio não é chamado para gerar titulos —
+// usamos o comeco da primeira mensagem do visitante.
 export async function generateTitleFromUserMessage({
   message,
 }: {
   message: UIMessage;
 }) {
-  const { text } = await generateText({
-    instructions: titlePrompt,
-    model: getTitleModel(),
-    prompt: getTextFromMessage(message),
-    providerOptions: {
-      gateway: { order: titleModel.gatewayOrder },
-    },
-  });
-  return text
-    .replace(/^[#*"\s]+/, "")
-    .replace(/["]+$/, "")
-    .trim();
+  const text = getTextFromMessage(message).trim().replace(/\s+/g, " ");
+
+  if (!text) {
+    return "Nova conversa";
+  }
+
+  return text.length > MAX_TITLE_LENGTH
+    ? `${text.slice(0, MAX_TITLE_LENGTH).trimEnd()}…`
+    : text;
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {
