@@ -5,6 +5,7 @@ import type { AppConfig } from '../config.js';
  * Setup da Evolution API pelo navegador (portado da linha remota, adaptado
  * para a nossa arquitetura de rotas/config). Abra:
  *   GET /dev/evolution/setup?token=<ADMIN_TOKEN>
+ * (ou header `x-admin-token`, mesmo padrão de /admin/qrcode)
  * A página mostra o QR atual da instância, o estado da conexão e se
  * auto-recarrega a cada 10s até o WhatsApp conectar.
  */
@@ -56,7 +57,12 @@ export function createDevEvolutionRouter(cfg: AppConfig): Router {
   const router = Router();
 
   router.get('/dev/evolution/setup', async (req, res) => {
-    if (req.query.token !== cfg.ADMIN_TOKEN) {
+    // Auth no padrão de routes/admin.ts (header x-admin-token); o query
+    // param ?token= é aceito como conveniência para abrir no navegador.
+    if (
+      req.header('x-admin-token') !== cfg.ADMIN_TOKEN &&
+      req.query.token !== cfg.ADMIN_TOKEN
+    ) {
       res.status(401).send('unauthorized');
       return;
     }

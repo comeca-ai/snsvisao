@@ -5,8 +5,9 @@
 > é o docker-compose all-in-one da raiz do repo (server + web + db +
 > evolution na mesma VPS). Use esta stack se quiser isolar a Evolution.
 
-O cérebro do Fio continua no Railway; esta stack roda só o canal WhatsApp
-(Evolution v2 + Postgres + Redis) na sua máquina.
+O cérebro do Fio roda na VPS dedicada via docker-compose all-in-one da
+raiz do repo (server + web + db + evolution); esta stack roda só o canal
+WhatsApp (Evolution v2 + Postgres + Redis) numa máquina separada.
 
 ## 1. Subir a stack
 
@@ -37,7 +38,7 @@ A resposta traz o QR code (base64). Alternativa visual: abrir o manager em
 `http://SEU_IP:8080/manager` e escanear por lá. **Use um chip dedicado de
 teste, nunca número pessoal.**
 
-## 3. Apontar o webhook para o cérebro (Railway)
+## 3. Apontar o webhook para o cérebro (server na VPS)
 
 ```bash
 curl -X POST http://localhost:8080/webhook/set/principal \
@@ -46,18 +47,19 @@ curl -X POST http://localhost:8080/webhook/set/principal \
   -d '{
     "webhook": {
       "enabled": true,
-      "url": "https://server-production-d1a1.up.railway.app/webhook/evolution",
-      "headers": { "x-webhook-token": "VALOR_DO_WEBHOOK_TOKEN_DO_RAILWAY" },
+      "url": "http://IP_DA_VPS:3000/webhook/evolution",
+      "headers": { "x-webhook-token": "VALOR_DO_WEBHOOK_TOKEN_DO_ENV" },
       "events": ["MESSAGES_UPSERT"]
     }
   }'
 ```
 
-## 4. Fechar o circuito no Railway
+## 4. Fechar o circuito no `.env` da VPS
 
-No serviço `server` do Railway, preencher:
+No `.env` usado pelo docker-compose da raiz (serviço `server`), preencher:
 
-- `EVOLUTION_API_URL` = `http://SEU_IP:8080` (ou o domínio com HTTPS)
+- `EVOLUTION_API_URL` = `http://SEU_IP:8080` (ou o domínio com HTTPS;
+  se a Evolution rodar no mesmo compose da raiz, use `http://evolution:8080`)
 - `EVOLUTION_API_KEY` = o `AUTHENTICATION_API_KEY` do passo 1
 - `EVOLUTION_INSTANCE` = `principal`
 

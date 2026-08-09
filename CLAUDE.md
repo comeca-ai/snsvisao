@@ -31,4 +31,4 @@ cd server && npm run typecheck && npm test
 ## Segredos
 
 Nunca colar segredos em chat/commits. `.env` local + painéis (Supabase,
-Railway). `.env.example` documenta as variáveis.
+arquivos `.env` da VPS). `.env.example` documenta as variáveis.

@@ -75,6 +75,15 @@ describe('GET /dev/evolution/setup', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('200 com header x-admin-token (padrão routes/admin.ts)', async () => {
+    const res = await realFetch(`${baseUrl}/dev/evolution/setup`, {
+      headers: { 'x-admin-token': 'a' }
+    });
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    expect(html).toContain('data:image/png;base64,QR_FAKE');
+  });
+
   it('200 com HTML contendo instruções e QR (mock da Evolution)', async () => {
     const res = await realFetch(`${baseUrl}/dev/evolution/setup?token=a`);
     expect(res.status).toBe(200);
