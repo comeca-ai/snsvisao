@@ -4,6 +4,7 @@ import type { MessagingProvider } from './types.js';
 
 export type { InboundMessage, MessagingProvider } from './types.js';
 export { EvolutionProvider } from './evolution.js';
+export { WebChatProvider } from './webchat.js';
 
 /** Factory: hoje só Evolution API v2. */
 export function createMessagingProvider(cfg: AppConfig): MessagingProvider {

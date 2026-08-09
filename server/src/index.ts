@@ -5,6 +5,7 @@ import { createLLMClient } from './llm/index.js';
 import { createMessagingProvider } from './messaging/index.js';
 import { createAdminRouter } from './routes/admin.js';
 import { createHealthRouter } from './routes/health.js';
+import { createWebchatRouter } from './routes/webchat.js';
 import { createWebhookRouter } from './routes/webhook.js';
 
 async function bootstrap(): Promise<void> {
@@ -16,6 +17,7 @@ async function bootstrap(): Promise<void> {
   app.use(express.json({ limit: '1mb' }));
   app.use(createHealthRouter());
   app.use(createWebhookRouter(deps));
+  app.use(createWebchatRouter(deps));
   app.use(createAdminRouter(config));
 
   app.listen(config.PORT, () => {

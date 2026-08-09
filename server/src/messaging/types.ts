@@ -1,5 +1,5 @@
 export interface InboundMessage {
-  providerName: 'evolution' | 'cloudapi';
+  providerName: 'evolution' | 'cloudapi' | 'webchat';
   providerMsgId: string;
   phone: string; // E.164 sem '+'
   pushName: string | null;
